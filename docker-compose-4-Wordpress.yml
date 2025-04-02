@@ -1,0 +1,25 @@
+services:
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    restart: always
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_WORDPRESS}
+    ports:
+      - 8081:80
+    environment:
+      WORDPRESS_DB_HOST: mysql-source
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+    volumes:
+      - ${OTUS_PROF_PROJECT_PATH}/wordpress:/var/www/html
+    env_file:
+      - .env
+
+networks:
+  otus-pro-net:
+    external: true
+    name: otus-pro-net
