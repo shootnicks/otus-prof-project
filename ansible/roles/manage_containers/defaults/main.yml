@@ -1,0 +1,24 @@
+---
+# defaults file for load_docker_image
+service:
+  - MySQL-Source:
+    files: docker-compose-1-MySQL-Source.yml
+    state: absent
+
+  - MySQL-Replica:
+    files: docker-compose-2-MySQL-Replica.yml
+    state: absent
+
+  - Zabbix:
+    files: docker-compose-3-Zabbix.yml
+    state: absent
+
+  - Wordpress:
+    files: docker-compose-4-Wordpress.yml
+    state: absent
+
+  - ELKB:
+    files: docker-compose-5-ELKB.yml
+    state: absent
+    # state: present or absent
+...

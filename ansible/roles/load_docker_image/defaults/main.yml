@@ -1,0 +1,47 @@
+---
+# defaults file for load_docker_image
+image:
+  - elasticsearch:
+    name: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    file: /tmp/docker_images/elkb/elasticsearch.8.13.4.tar
+  - logstash:
+    name: docker.elastic.co/logstash/logstash:8.13.4
+    file: /tmp/docker_images/elkb/logstash.8.13.4.tar
+  - kibana:
+    name: docker.elastic.co/kibana/kibana:8.13.4
+    file: /tmp/docker_images/elkb/kibana.8.13.4.tar
+  - filebeat:
+    name: docker.elastic.co/beats/filebeat:8.13.4
+    file: /tmp/docker_images/elkb/filebeat.8.13.4.tar
+
+  - mysql:
+    name: mysql:8.0.37-debian
+    file: /tmp/docker_images/mysql/mysql.8.0.37-debian.tar
+
+  - wordpress:
+    name: wordpress:6.7.2-php8.2-apache
+    file: /tmp/docker_images/wordpress/wordpress.6.7.2-php8.2-apache.tar
+
+  - zabbix-server:
+    name: zabbix/zabbix-server-mysql:alpine-6.4.21
+    file: /tmp/docker_images/zabbix/zabbix-server-mysql.alpine-6.4.21.tar
+  - zabbix-web-nginx-mysql:
+    name: zabbix/zabbix-web-nginx-mysql:alpine-6.4.21
+    file: /tmp/docker_images/zabbix/zabbix-web-nginx-mysql.alpine-6.4.21.tar
+  - zabbix-agent:
+    name: zabbix/zabbix-agent:alpine-6.4.21
+    file: /tmp/docker_images/zabbix/zabbix-agent.alpine-6.4.21.tar
+...
+
+
+
+
+
+
+
+
+
+
+
+
+...

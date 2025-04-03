@@ -2,11 +2,11 @@ CREATE USER repl@'%' IDENTIFIED WITH 'caching_sha2_password' BY 'oTUSlave#2020';
 GRANT REPLICATION SLAVE ON *.* TO repl@'%';
 
 CREATE DATABASE IF NOT EXISTS zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'zabbix'@'%' IDENTIFIED BY 'z@bbiXpa$$';
+CREATE USER IF NOT EXISTS 'zabbix'@'%' IDENTIFIED BY 'z@bbiXpaSS';
 GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'%';
 FLUSH PRIVILEGES;
 
 CREATE DATABASE IF NOT EXISTS wordpress_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'v0rdpre$$pa$$';
+CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'v0rdpreSSpaSS';
 GRANT ALL PRIVILEGES ON wordpress_db.* TO 'wordpress'@'%';
 FLUSH PRIVILEGES;

@@ -1,0 +1,10 @@
+---
+# tasks file for load_docker_image
+- name: Load image from archive and push to a private registry
+  community.docker.docker_image:
+    name: "{{ item.name }}"
+    load_path: "{{ item.file }}"
+    source: load
+    state: present
+  loop: "{{ image }}"
+...

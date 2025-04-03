@@ -1,7 +1,7 @@
 services:
 
   zabbix-server:
-    image: zabbix/zabbix-server-mysql:alpine-6.4-latest
+    image: zabbix/zabbix-server-mysql:alpine-6.4.21
     container_name: zabbix-server
     restart: unless-stopped
     environment:
@@ -20,7 +20,7 @@ services:
       - .env
 
   zabbix-web:
-    image: zabbix/zabbix-web-nginx-mysql:alpine-6.4-latest
+    image: zabbix/zabbix-web-nginx-mysql:alpine-6.4.21
     container_name: zabbix-web
     restart: unless-stopped
     environment:
@@ -43,7 +43,7 @@ services:
       - .env
 
   zabbix-agent:
-    image: zabbix/zabbix-agent:latest
+    image: zabbix/zabbix-agent:alpine-6.4.21
     container_name: zabbix-agent
     restart: unless-stopped
     init: true

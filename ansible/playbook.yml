@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  roles:
+    # - role: load_docker_image
+    - role: preparing_for_elkb
+    - role: manage_containers
+...
