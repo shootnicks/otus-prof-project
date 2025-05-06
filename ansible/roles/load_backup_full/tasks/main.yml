@@ -1,0 +1,22 @@
+---
+# tasks file for load_backup_full
+- name: Remove otus-prof-project_backup.tar.gz
+  file:
+    path: /tmp/otus-prof-project_backup.tar.gz
+    state: absent
+
+- name: Download file without check
+  ansible.builtin.get_url:
+    url: "{{ otus_prof_project_backup }}"
+    dest: /tmp/otus-prof-project_backup.tar.gz
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: /tmp/otus-prof-project_backup.tar.gz
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}"
+    remote_src: yes
+
+# - name: Remove otus-prof-project_backup.tar.gz
+#   file:
+#     path: /tmp/otus-prof-project_backup.tar.gz
+#     state: absent

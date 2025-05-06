@@ -6,6 +6,16 @@
     dest: "{{ OTUS_PROF_PROJECT_PATH }}/.env"
     # backup: true
 
+
+- name: Создание директории, если ее нет
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/"
+    - "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db2/"
+
 - name: Create source.sql for docker MYSQL_DB1
   ansible.builtin.template:
     src: source.sql.j2

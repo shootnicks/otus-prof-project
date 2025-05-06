@@ -15,6 +15,18 @@
     - "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/data"
     - "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db2/data"
 
+- name: Create source.cnf
+  ansible.builtin.template:
+    src: source.cnf.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/source.cnf"
+    mode: '0644'
+
+- name: Create replica.cnf
+  ansible.builtin.template:
+    src: replica.cnf.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/replica.cnf"
+    mode: '0644'
+
 - name: Start DB1 container
   community.docker.docker_compose_v2:
     project_src: "{{ OTUS_PROF_PROJECT_PATH }}"

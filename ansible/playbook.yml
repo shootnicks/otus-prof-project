@@ -13,6 +13,8 @@
     # - role: preparing_for_elkb
 # Делает полный бекап всех баз данных и папок.
     # - role: backup_full
+# Скачивает архив бэкапов с сервера files.andriyanovs.ru.
+    - role: load_backup_full
 # Восстанавливает базы данных из бэкапов. Останавливая предварительно Zabbix и Wordpress.   
     # - role: restore_1_db
 # Восстанавливает базу данных Zabbix из бэкапа. Предварительно удалив базу данных Zabbix если она есть.
