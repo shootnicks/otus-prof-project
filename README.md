@@ -54,3 +54,16 @@ docker exec -it mysql-replica mysql -uroot -p'replicaPa$$' -e "SHOW DATABASES;"
 docker-compose -f docker-compose-2-MySQL-Replica.yml down
 ```
 </details>
+
+
+
+apt update
+apt install mc
+curl -fsSL https://get.docker.com | sudo sh
+apt install git -y
+git clone https://github.com/shootnicks/otus-prof-project.git
+cd otus-prof-project/
+cd ansible/
+apt install ansible
+ansible-galaxy collection install community.docker
+apt install sshpass
