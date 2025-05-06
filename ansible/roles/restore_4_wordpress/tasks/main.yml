@@ -1,0 +1,43 @@
+---
+# tasks file for restore_4_wordpress
+- name: Stop and stop dependent containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item.files }}"
+    state: "{{ item.state }}"
+  loop: "{{ dependent_containers }}"
+
+- name: Удалить базу данных Wordpress из MySQL
+  shell: >
+    docker exec -it {{ MYSQL_DB1.CONTAINER_NAME_MYSQL_DB1 }} mysql -u{{ MYSQL_DB1.MYSQL_ROOT_USER_DB1 }} -p'{{ MYSQL_DB1.MYSQL_ROOT_PASSWORD_DB1 }}' -e "DROP DATABASE IF EXISTS {{ DATABASES.DB_Wordpress.DATABASE }};"
+
+- name: Restore database Wordpress from backups
+  ansible.builtin.shell: >
+    docker exec -it {{ MYSQL_DB1.CONTAINER_NAME_MYSQL_DB1 }} mysql -u{{ MYSQL_DB1.MYSQL_ROOT_USER_DB1 }} -p'{{ MYSQL_DB1.MYSQL_ROOT_PASSWORD_DB1 }}' -e "CREATE DATABASE IF NOT EXISTS {{ DATABASES.DB_Wordpress.DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+- name: Restore database Wordpress from backups
+  ansible.builtin.shell: >
+    docker exec -it {{ MYSQL_DB1.CONTAINER_NAME_MYSQL_DB1 }} mysql -u{{ MYSQL_DB1.MYSQL_ROOT_USER_DB1 }} -p'{{ MYSQL_DB1.MYSQL_ROOT_PASSWORD_DB1 }}' -e "CREATE USER IF NOT EXISTS '{{ DATABASES.DB_Wordpress.USER }}'@'%' IDENTIFIED BY '{{ DATABASES.DB_Wordpress.PASSWORD }}';"
+
+- name: Restore database Wordpress from backups
+  ansible.builtin.shell: >
+    docker exec -it {{ MYSQL_DB1.CONTAINER_NAME_MYSQL_DB1 }} mysql -u{{ MYSQL_DB1.MYSQL_ROOT_USER_DB1 }} -p'{{ MYSQL_DB1.MYSQL_ROOT_PASSWORD_DB1 }}' -e "GRANT ALL PRIVILEGES ON {{ DATABASES.DB_Wordpress.DATABASE }}.* TO '{{ DATABASES.DB_Wordpress.USER }}'@'%';"
+
+- name: Restore database Wordpress from backups
+  ansible.builtin.shell: >
+    docker exec -it {{ MYSQL_DB1.CONTAINER_NAME_MYSQL_DB1 }} mysql -u{{ MYSQL_DB1.MYSQL_ROOT_USER_DB1 }} -p'{{ MYSQL_DB1.MYSQL_ROOT_PASSWORD_DB1 }}' -e "FLUSH PRIVILEGES;"
+
+- name: Restore database Wordpress from backups
+  ansible.builtin.shell: >
+    {{ OTUS_PROF_PROJECT_PATH }}/backups/databases/restore-{{ DATABASES.DB_Wordpress.DATABASE }}.sh
+
+- name: Remove Wordpress directories
+  file:
+    path: "{{ OTUS_PROF_PROJECT_PATH }}/wordpress"
+    state: absent
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: "{{ OTUS_PROF_PROJECT_PATH }}/backups/folder/wordpress.tar.gz"
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}"
+    remote_src: yes

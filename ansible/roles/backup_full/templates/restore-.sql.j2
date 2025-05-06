@@ -1,0 +1,29 @@
+#!/bin/bash
+
+Container={{ MYSQL_DB1.CONTAINER_NAME_MYSQL_DB1 }};
+DbName={{ item.value.DATABASE }};
+User={{ item.value.USER }};
+Password={{ item.value.PASSWORD }};
+Work_dir={{ OTUS_PROF_PROJECT_PATH }}/backups/databases/{{ item.value.DATABASE }}
+
+# Ищем последний сделанный бэкап в папке с бэкапами.
+last_backup_file=`ls -1 $Work_dir | grep "backup_" | sort | tail -n 1`;
+# Создаём временную папку для хранения распокованных файлов.
+mkdir -p $Work_dir/tempo_for_restore;
+# Распаковываем файлы дампа из последнего сделанного бэкапа.
+tar -xf $Work_dir/$last_backup_file -C $Work_dir/tempo_for_restore/;
+
+## Создаём базу данных.
+#echo "CREATE DATABASE $DbName;" | docker exec -e MYSQL_PWD=$Password -i $Container /usr/bin/mysql -u $User
+
+# Перебор всех файлов во всех вложенных папках
+find "$Work_dir/tempo_for_restore" -type f | while read -r file; do
+	cat "$file" | docker exec -e MYSQL_PWD=$Password -i $Container /usr/bin/mysql -u $User $DbName
+done
+
+# Удаляем временную папку для хранения распокованных файлов.
+rm -r $Work_dir/tempo_for_restore
+
+echo -e '\e[1;32mCongratulations, the restore is done!\e[1;m';
+
+unset MYSQL_PWD;

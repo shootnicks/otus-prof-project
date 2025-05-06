@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+  vars_files:
+    - .env_ansible
+  roles:
+# Обязательная роль для всех запусков. Выравнивает всё и везде.  
+    - role: align_env
+# Делает загрузку образов docker-ов с сервера files.andriyanovs.ru.
+    # - role: load_docker_image
+# Нужен только если будет чистая установка.
+    # - role: preparing_for_elkb
+# Делает полный бекап всех баз данных и папок.
+    # - role: backup_full
+# Восстанавливает базы данных из бэкапов. Останавливая предварительно Zabbix и Wordpress.   
+    # - role: restore_1_db
+# Восстанавливает базу данных Zabbix из бэкапа. Предварительно удалив базу данных Zabbix если она есть.
+    # - role: restore_3_zabbix
+# Восстанавливает базу данных Wordpress из бэкапа. Предварительно удалив базу данных Zabbix если она есть.
+    # - role: restore_4_wordpress
+# Восстанавливает ELKB из бэкапа. Предварительно удалив всю его папку.
+    # - role: restore_5_ELKB
+# Восстанавливает Nginx из бэкапа.
+    # - role: restore_6_Nginx
+# Управляет контейнерами на основе переменных заданных в .env_ansible
+    - role: manage_containers
+...

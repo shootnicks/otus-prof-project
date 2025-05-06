@@ -1,0 +1,38 @@
+---
+# tasks file for db_restore
+- name: Stop dependent containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item.files }}"
+    state: absent
+  loop: "{{ service }}"
+
+- name: Remove MySQL configuration and data directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/data"
+    - "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db2/data"
+
+- name: Start DB1 container
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: docker-compose-1-MySQL-DB1.yml
+    state: present
+
+- name: Start DB2 container
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: docker-compose-2-MySQL-DB2.yml
+    state: present
+
+- name: Sleep for 300 seconds and continue with play
+  ansible.builtin.wait_for:
+    timeout: 30
+
+- name: Restore databases from backups
+  ansible.builtin.shell:
+    cmd: "{{ OTUS_PROF_PROJECT_PATH }}/backups/databases/restore-{{ item.value.DATABASE }}.sh"
+  loop: "{{ DATABASES | dict2items }}"
+...

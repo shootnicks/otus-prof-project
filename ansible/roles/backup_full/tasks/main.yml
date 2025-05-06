@@ -1,0 +1,71 @@
+---
+# tasks file for db_backup
+- name: Создание директории, если ее нет
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "{{ OTUS_PROF_PROJECT_PATH }}/backups/databases/"
+    - "{{ OTUS_PROF_PROJECT_PATH }}/backups/folder/"
+
+- name: Create backup-*.sh file for backup databases
+  ansible.builtin.template:
+    src: backup-.sql.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/backups/databases/backup-{{ item.value.DATABASE }}.sh"
+    mode: '0777'
+  loop: "{{ DATABASES | dict2items }}"
+
+- name: Create restore-*.sh file for restore databases
+  ansible.builtin.template:
+    src: restore-.sql.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/backups/databases/restore-{{ item.value.DATABASE }}.sh"
+    mode: '0777'
+  loop: "{{ DATABASES | dict2items }}"
+
+- name: Absent only Zabbix and Wordpress
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item }}"
+    state: absent
+  loop:
+    - "docker-compose-3-Zabbix.yml"
+    - "docker-compose-4-Wordpress.yml"
+
+- name: Present MySQL-DB1 and MySQL-DB2 for create backup
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item }}"
+    state: present
+  loop:
+    - "docker-compose-2-MySQL-DB2.yml"
+
+- name: Pause for 15 seconds to build app cache
+  ansible.builtin.pause:
+    seconds: 15
+
+- name: Create backups databases
+  ansible.builtin.shell:
+    cmd: "{{ OTUS_PROF_PROJECT_PATH }}/backups/databases/backup-{{ item.value.DATABASE }}.sh"
+  loop: "{{ DATABASES | dict2items }}"
+
+- name: Absent all containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item.files }}"
+    state: absent
+  loop: "{{ service }}"
+
+- name: Use gzip to compress a single archive (i.e don't archive it first with tar)
+  community.general.archive:
+    path: "{{ item.path }}"
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/backups/folder/{{ item.file_gz }}"
+    format: gz
+  loop: "{{ folder_for_archive }}"
+
+- name: Use gzip to compress a single archive (i.e don't archive it first with tar)
+  community.general.archive:
+    path: "{{ OTUS_PROF_PROJECT_PATH }}/backups"
+    dest: "/tmp/otus-prof-project_backup.tar.gz"
+    format: gz
+...

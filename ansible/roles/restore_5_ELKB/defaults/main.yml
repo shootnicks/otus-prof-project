@@ -1,0 +1,6 @@
+---
+# defaults file for restore_5_ELKB
+dependent_containers:
+  - ELKB:
+    files: docker-compose-5-ELKB.yml
+    state: absent

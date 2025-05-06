@@ -1,0 +1,9 @@
+---
+# tasks file for manage_containers
+- name: Manage containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item.files }}"
+    state: "{{ item.state }}"
+  loop: "{{ service }}"
+...

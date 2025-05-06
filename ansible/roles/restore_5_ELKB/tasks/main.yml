@@ -1,0 +1,25 @@
+---
+# tasks file for restore_5_ELKB
+- name: Stop and stop dependent containers
+  community.docker.docker_compose_v2:
+    project_src: "{{ OTUS_PROF_PROJECT_PATH }}"
+    files: "{{ item.files }}"
+    state: "{{ item.state }}"
+  loop: "{{ dependent_containers }}"
+
+- name: Remove ELKB directories
+  file:
+    path: "{{ OTUS_PROF_PROJECT_PATH }}/ELKB"
+    state: absent
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: "{{ OTUS_PROF_PROJECT_PATH }}/backups/folder/ELKB.tar.gz"
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}"
+    remote_src: yes
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: "{{ OTUS_PROF_PROJECT_PATH }}/backups/folder/certs_otus_pro_net.tar.gz"
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}"
+    remote_src: yes

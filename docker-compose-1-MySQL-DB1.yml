@@ -1,0 +1,25 @@
+services:
+
+  mysql-db1:
+    container_name: ${CONTAINER_NAME_MYSQL_DB1}
+    image: mysql:8.0.37-debian
+    restart: always
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_MYSQL_DB1}
+    environment:
+      TZ: "Europe/Moscow"
+      MYSQL_ROOT_USER: ${MYSQL_ROOT_USER_DB1}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_DB1}
+      default-authentication-plugin: mysql_native_password
+    volumes:
+      - ${OTUS_PROF_PROJECT_PATH}/mysql/mysql-db1/source.cnf:/etc/mysql/my.cnf
+      - ${OTUS_PROF_PROJECT_PATH}/mysql/mysql-db1/source.sql:/docker-entrypoint-initdb.d/start.sql
+      - ${OTUS_PROF_PROJECT_PATH}/mysql/mysql-db1/data:/var/lib/mysql
+    env_file:
+      - .env
+
+networks:
+  otus-pro-net:
+    external: true
+    name: otus-pro-net

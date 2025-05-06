@@ -1,0 +1,74 @@
+services:
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:ubuntu-7.0.11
+# Latest LTS version as of 05.04.2025
+    container_name: ${CONTAINER_NAME_ZABBIX}
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+      DB_SERVER_HOST: ${CONTAINER_NAME_MYSQL_DB1}
+      MYSQL_DATABASE: ${ZABBIX_MYSQL_DATABASE}
+      MYSQL_USER: ${ZABBIX_MYSQL_USER}
+      MYSQL_PASSWORD: ${ZABBIX_MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_DB1}
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_ZABBIX_SERVER}
+    ports:
+      - "10051:10051"
+    env_file:
+      - .env
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:ubuntu-7.0.11
+# Latest LTS version as of 05.04.2025
+    container_name: zabbix-web
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+      ZBX_SERVER_HOST: ${CONTAINER_NAME_ZABBIX}
+      DB_SERVER_HOST: ${CONTAINER_NAME_MYSQL_DB1}
+      MYSQL_DATABASE: ${ZABBIX_MYSQL_DATABASE}
+      MYSQL_USER: ${ZABBIX_MYSQL_USER}
+      MYSQL_PASSWORD: ${ZABBIX_MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_DB1}
+      PHP_TZ: "Europe/Moscow"
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_ZABBIX_WEB}
+    depends_on:
+      - ${CONTAINER_NAME_ZABBIX}
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+
+  zabbix-agent2:
+    image: zabbix/zabbix-agent2:ubuntu-7.0.11
+# Latest LTS version as of 05.04.2025
+    container_name: zabbix-agent2
+    restart: unless-stopped
+    init: true
+    privileged: true
+    user: root
+    environment:
+      ZBX_SERVER_HOST: ${CONTAINER_NAME_ZABBIX}
+      ZBX_HOSTNAME: docker-agent2
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_ZABBIX_AGENT}
+    depends_on:
+      - ${CONTAINER_NAME_ZABBIX}
+    env_file:
+      - .env
+
+networks:
+  otus-pro-net:
+    external: true
+    name: otus-pro-net

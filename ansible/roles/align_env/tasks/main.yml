@@ -1,0 +1,17 @@
+---
+# tasks file for align_passwords
+- name: Create .env for docker
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/.env"
+    # backup: true
+
+- name: Create source.sql for docker MYSQL_DB1
+  ansible.builtin.template:
+    src: source.sql.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/source.sql"
+
+- name: Create replica.sql for docker MYSQL_DB2
+  ansible.builtin.template:
+    src: replica.sql.j2
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db2/replica.sql"

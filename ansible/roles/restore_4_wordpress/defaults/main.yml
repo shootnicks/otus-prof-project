@@ -1,0 +1,14 @@
+---
+# defaults file for restore_4_wordpress
+dependent_containers:
+  - MySQL-DB1:
+    files: docker-compose-1-MySQL-DB1.yml
+    state: present
+
+  - MySQL-DB2:
+    files: docker-compose-2-MySQL-DB2.yml
+    state: present
+
+  - Wordpress:
+    files: docker-compose-4-Wordpress.yml
+    state: absent

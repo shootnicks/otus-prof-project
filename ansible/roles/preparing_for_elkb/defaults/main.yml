@@ -1,0 +1,8 @@
+---
+# defaults file for preparing_for_elkb
+path:
+  - /opt/otus-prof-project/ELKB/elasticsearch/data/
+  - /opt/otus-prof-project/ELKB/kibana/
+  - /opt/otus-prof-project/certs_otus_pro_net/
+  - /opt/otus-prof-project/nginx/certbot/webroot
+  - /opt/otus-prof-project/certs_letsencrypt

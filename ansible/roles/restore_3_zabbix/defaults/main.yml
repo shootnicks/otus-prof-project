@@ -1,0 +1,14 @@
+---
+# defaults file for restore_3_zabbix
+dependent_containers:
+  - MySQL-DB1:
+    files: docker-compose-1-MySQL-DB1.yml
+    state: present
+
+  - MySQL-DB2:
+    files: docker-compose-2-MySQL-DB2.yml
+    state: present
+
+  - Zabbix:
+    files: docker-compose-3-Zabbix.yml
+    state: absent

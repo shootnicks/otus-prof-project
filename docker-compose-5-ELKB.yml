@@ -1,0 +1,228 @@
+---
+services:
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: setup
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_SETUP}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: elasticsearch\n"\
+          "    dns:\n"\
+          "      - elasticsearch\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: wordpress\n"\
+          "    dns:\n"\
+          "      - wordpress\n"\
+          "    ip:\n"\
+          "      - 172.20.101.20\n"\
+          "  - name: kibana\n"\
+          "    dns:\n"\
+          "      - kibana\n"\
+          "    ip:\n"\
+          "      - 172.20.101.50\n"\
+          "  - name: zabbix\n"\
+          "    dns:\n"\
+          "      - zabbix\n"\
+          "    ip:\n"\
+          "      - 172.20.101.30\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://elasticsearch:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/elasticsearch/elasticsearch.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+    env_file:
+      - .env
+
+  elasticsearch:
+    depends_on:
+      setup:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: elasticsearch
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_ELASTICSEARCH}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_PORT}:9200
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    env_file:
+      - .env
+
+  kibana:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    container_name: kibana
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_KIBANA}
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - SERVER_PUBLICBASEURL=http://kibana:${KIBANA_PORT}
+    mem_limit: ${KB_MEM_LIMIT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    env_file:
+      - .env
+
+  logstash:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    container_name: logstash
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_LOGSTASH}
+    labels:
+      co.elastic.logs/module: logstash
+    user: root
+    volumes:
+      - ${OTUS_PROF_PROJECT_PATH}/ELKB/logstash/data:/usr/share/logstash/data
+      - certs:/usr/share/logstash/certs
+      - ${OTUS_PROF_PROJECT_PATH}/ELKB/logstash/pipeline/logstash-nginx-es.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    environment:
+      - NODE_NAME="logstash"
+      - xpack.monitoring.enabled=false
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elasticsearch:9200
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - 5044:5044
+    mem_limit: ${LS_MEM_LIMIT}
+    env_file:
+      - .env
+
+  filebeat:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    container_name: filebeat
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_FILEBEAT}
+    user: root
+    volumes:
+      - ${OTUS_PROF_PROJECT_PATH}/ELKB/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${OTUS_PROF_PROJECT_PATH}/nginx/log:/host/var/log:ro
+    env_file:
+      - .env
+
+networks:
+  otus-pro-net:
+    external: true
+    name: otus-pro-net
+
+volumes:
+  certs:
+    driver: local
+    driver_opts:
+     type: none
+     o: bind
+     device: ${OTUS_PROF_PROJECT_PATH}/certs_otus_pro_net/
+  esdata:
+    driver: local
+    driver_opts:
+     type: none
+     o: bind
+     device: ${OTUS_PROF_PROJECT_PATH}/ELKB/elasticsearch/data/
+  kibanadata:
+    driver: local
+    driver_opts:
+     type: none
+     o: bind
+     device: ${OTUS_PROF_PROJECT_PATH}/ELKB/kibana/
+...

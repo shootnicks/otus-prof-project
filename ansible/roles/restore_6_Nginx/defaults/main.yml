@@ -1,0 +1,14 @@
+---
+# defaults file for restore_6_Nginx
+dependent_containers:
+  - Nginx:
+    files: docker-compose-6-Nginx.yml
+    state: absent
+
+archives:
+  - certs_letsencrypt:
+    path: "{{ OTUS_PROF_PROJECT_PATH }}/certs_letsencrypt"
+    file_gz: certs_letsencrypt.tar.gz
+  - nginx:
+    path: "{{ OTUS_PROF_PROJECT_PATH }}/nginx"
+    file_gz: nginx.tar.gz

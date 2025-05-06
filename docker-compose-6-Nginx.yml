@@ -1,0 +1,24 @@
+services:
+  nginx:
+    image: nginx:1.27.4-bookworm
+# Latest version as of 05.04.2025
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${OTUS_PROF_PROJECT_PATH}/nginx/conf.d:/etc/nginx/conf.d
+      - ${OTUS_PROF_PROJECT_PATH}/nginx/certbot/webroot:/var/www/certbot
+      - ${OTUS_PROF_PROJECT_PATH}/certs_letsencrypt:/etc/letsencrypt
+      - ${OTUS_PROF_PROJECT_PATH}/nginx/log:/var/log/nginx/
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_NGINX}
+    env_file:
+      - .env
+
+networks:
+  otus-pro-net:
+    external: true
+    name: otus-pro-net

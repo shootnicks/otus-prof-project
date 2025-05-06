@@ -1,0 +1,25 @@
+services:
+  certbot-init:
+    image: certbot/certbot:v3.3.0
+    container_name: certbot-init
+    volumes:
+      - ${OTUS_PROF_PROJECT_PATH}/nginx/certbot/webroot:/var/www/certbot
+      - ${OTUS_PROF_PROJECT_PATH}/certs_letsencrypt:/etc/letsencrypt
+    command:  >
+      certonly --webroot -w /var/www/certbot
+      --email pg.andriyanov@gmail.com
+      --agree-tos
+      --no-eff-email
+      -d otus-kibana.andriyanovs.ru
+      -d otus-wordpress.andriyanovs.ru
+      -d otus-kibana.andriyanovs.ru
+    networks:
+      otus-pro-net:
+        ipv4_address: ${IP_CERTBOT}
+    env_file:
+      - .env
+
+networks:
+  otus-pro-net:
+    external: true
+    name: otus-pro-net

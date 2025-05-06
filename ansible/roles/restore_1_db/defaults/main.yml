@@ -1,0 +1,14 @@
+---
+# defaults file for db_restore
+service:
+  - MySQL-DB1:
+    files: docker-compose-1-MySQL-DB1.yml
+
+  - MySQL-DB2:
+    files: docker-compose-2-MySQL-DB2.yml
+
+  - Zabbix:
+    files: docker-compose-3-Zabbix.yml
+
+  - Wordpress:
+    files: docker-compose-4-Wordpress.yml

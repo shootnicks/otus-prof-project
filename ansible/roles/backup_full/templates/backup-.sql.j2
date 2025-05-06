@@ -1,0 +1,25 @@
+#!/bin/bash
+
+Container={{ MYSQL_DB2.CONTAINER_NAME_MYSQL_DB2 }};
+DbName={{ item.value.DATABASE }};
+User={{ item.value.USER }};
+Password={{ item.value.PASSWORD }};
+DATE=`date +"%Y-%m-%d_%Hh-%Mm"`;
+Work_dir={{ OTUS_PROF_PROJECT_PATH }}/backups/databases/{{ item.value.DATABASE }}
+DIR=$Work_dir/tempo_backup_$DbName"_"$DATE;
+FILE=backup_$DbName"_"$DATE".tar.gz"
+
+mkdir -p $DIR;
+
+for TABLE_NAME in `docker exec -e MYSQL_PWD=$Password $Container mysql -u$User --skip-column-names -e "SHOW TABLES FROM "$DbName`;
+	do
+		docker exec -e MYSQL_PWD=$Password $Container /usr/bin/mysqldump -u $User --no-tablespaces --set-gtid-purged=OFF --add-drop-table --add-locks --create-options --disable-keys --extended-insert --single-transaction --quick --set-charset --events --routines --triggers $DbName $TABLE_NAME > $DIR/$TABLE_NAME.sql;
+	done
+echo
+
+tar -czf $Work_dir/$FILE -C $DIR .;
+echo -e '\e[1;32mCongratulations, the backup is done!\e[1;m';
+echo -e 'File:\e[1;31m '$FILE'\e[1;m';
+
+rm -r $DIR;
+unset MYSQL_PWD;

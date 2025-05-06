@@ -1,0 +1,19 @@
+.env
+backups/databases/backup-*
+backups/databases/restore-*
+certs_letsencrypt
+certs_otus_pro_net
+/ELKB/*
+!/ELKB/filebeat
+!/ELKB/filebeat/filebeat.yml
+!/ELKB/logstash
+/ELKB/logstash/data/*
+!/ELKB/logstash/pipeline
+!/ELKB/logstash/pipeline/logstash-nginx-es.conf
+mysql/mysql-db1/source.sql
+mysql/mysql-db2/replica.sql
+mysql/mysql-db1/data/*
+mysql/mysql-db2/data/*
+# nginx/log/*
+nginx
+wordpress

@@ -1,0 +1,38 @@
+---
+# tasks file for load_docker_image
+- name: Download file with check (sha512)
+  ansible.builtin.get_url:
+    url: "{{ image_source.internet_location }}"
+    dest: /tmp/docker_images.zip
+    checksum: "{{ image_source.algorithm_version }}:{{ image_source.md5_sum }}"
+
+- name: Создание директории, если ее нет
+  ansible.builtin.file:
+    path: "{{ image_local_location }}"
+    state: directory
+    mode: 0755
+
+- name: Unarchive a file that is already on the remote machine
+  ansible.builtin.unarchive:
+    src: /tmp/docker_images.zip
+    dest: "{{ image_local_location }}"
+    remote_src: yes
+
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /tmp/docker_images.zip
+    state: absent
+
+- name: Load Docker images
+  community.docker.docker_image:
+    name: "{{ item.name }}"
+    load_path: "{{ image_local_location }}/{{ item.file }}"
+    source: load
+    state: present
+  loop: "{{ image }}"
+
+- name: Recursively remove directory
+  ansible.builtin.file:
+    path: "{{ image_local_location }}"
+    state: absent
+...
