@@ -57,13 +57,8 @@ docker-compose -f docker-compose-2-MySQL-Replica.yml down
 
 
 
-apt update
-apt install mc
-curl -fsSL https://get.docker.com | sudo sh
-apt install git -y
-git clone https://github.com/shootnicks/otus-prof-project.git
-cd otus-prof-project/
-cd ansible/
-apt install ansible
+apt update && apt install mc git ansible sshpass -y
 ansible-galaxy collection install community.docker
-apt install sshpass
+curl -fsSL https://get.docker.com | sudo sh
+git clone https://github.com/shootnicks/otus-prof-project.git /opt
+<!-- cd otus-prof-project/ansible/ -->

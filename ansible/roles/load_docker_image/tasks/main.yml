@@ -15,7 +15,7 @@
 - name: Unarchive a file that is already on the remote machine
   ansible.builtin.unarchive:
     src: /tmp/docker_images.zip
-    dest: "{{ image_local_location }}"
+    dest: /tmp
     remote_src: yes
 
 - name: Remove file (delete file)
@@ -26,7 +26,7 @@
 - name: Load Docker images
   community.docker.docker_image:
     name: "{{ item.name }}"
-    load_path: "{{ image_local_location }}/{{ item.file }}"
+    load_path: "{{ image_local_location }}{{ item.file }}"
     source: load
     state: present
   loop: "{{ image }}"
