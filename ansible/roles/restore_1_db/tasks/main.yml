@@ -24,7 +24,7 @@
 - name: Create replica.cnf
   ansible.builtin.template:
     src: replica.cnf.j2
-    dest: "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db1/replica.cnf"
+    dest: "{{ OTUS_PROF_PROJECT_PATH }}/mysql/mysql-db2/replica.cnf"
     mode: '0644'
 
 - name: Start DB1 container

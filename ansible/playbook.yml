@@ -10,7 +10,7 @@
 # Настройка сети.  
     - role: network_setup
 # Делает загрузку образов docker-ов с сервера files.andriyanovs.ru.
-    - role: load_docker_image
+    # - role: load_docker_image
 # Нужен только если будет чистая установка.
     # - role: preparing_for_elkb
 # Делает полный бекап всех баз данных и папок.
